@@ -6,7 +6,7 @@ A Next.js frontend and Laravel REST API for student accounts and student records
 
 Requirements: Node.js, PHP 8.3+, Composer, a Supabase PostgreSQL project, and (for the physical database activity) a trusted local network connection to the Windows MySQL server.
 
-1. Copy `backend/.env.example` to `backend/.env`. Add the PostgreSQL host, database, username, and password from Supabase. Keep these credentials private. Set `APP_KEY` with `php artisan key:generate` from the backend folder.
+1. Copy `backend/.env.example` to `backend/.env` only if no backend `.env` exists. Otherwise, merge its `DB_CONNECTION=pgsql`, PostgreSQL, `LOCAL_MYSQL_*`, and `FRONTEND_URL` settings into the existing file so you preserve its other private values. Add the PostgreSQL host, database, username, and password from Supabase. Keep these credentials private. Set `APP_KEY` with `php artisan key:generate` from the backend folder.
 2. Copy `frontend/.env.example` to `frontend/.env.local`. The default API URL is `http://127.0.0.1:8000/api`.
 3. In `backend`, install dependencies with `composer install`, then run `php artisan migrate --seed`. Migrations and sample cloud student records target the configured PostgreSQL database.
 4. In `backend`, set `LOCAL_MYSQL_HOST`, `LOCAL_MYSQL_PORT`, `LOCAL_MYSQL_DATABASE`, `LOCAL_MYSQL_USERNAME`, and `LOCAL_MYSQL_PASSWORD` to the trusted LAN MySQL server. Run `database/physical_mysql.sql` on that Windows server. Use a restricted application account and firewall access limited to the development computer or trusted lab subnet.
