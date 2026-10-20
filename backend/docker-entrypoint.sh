@@ -12,6 +12,7 @@ if [ -z "${APP_KEY:-}" ]; then
     export APP_KEY
 fi
 
+php artisan config:clear
 php artisan migrate --force
 php artisan db:seed --force
 
