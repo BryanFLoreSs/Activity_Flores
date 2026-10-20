@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,10 +18,20 @@ class StudentController extends Controller
         ]);
 
         $connection = $validated['source'] === 'cloud' ? 'pgsql' : 'local_mysql';
-        $students = DB::connection($connection)
-            ->table('students')
-            ->orderBy('id')
-            ->get();
+        try {
+            $students = DB::connection($connection)
+                ->table('students')
+                ->orderBy('id')
+                ->get();
+        } catch (QueryException $exception) {
+            if ($validated['source'] === 'physical') {
+                return response()->json([
+                    'message' => 'Could not connect to the Physical MySQL server. Make sure MySQL is running and its host, port, and firewall allow connections from this computer.',
+                ], 503);
+            }
+
+            throw $exception;
+        }
 
         return response()->json([
             'source' => $validated['source'],

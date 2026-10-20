@@ -111,6 +111,7 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::ATTR_TIMEOUT => (int) env('LOCAL_MYSQL_CONNECT_TIMEOUT', 5),
             ]) : [],
         ],
 
@@ -156,7 +157,7 @@ return [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
             'prefix' => env(
                 'REDIS_PREFIX',
-                Str::slug((string) env('APP_NAME', 'laravel')) . '-database-'
+                Str::slug((string) env('APP_NAME', 'laravel')).'-database-'
             ),
             'persistent' => env('REDIS_PERSISTENT', false),
         ],
