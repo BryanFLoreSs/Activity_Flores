@@ -2,6 +2,19 @@
 
 A Next.js frontend and Laravel REST API for student accounts and student records. Laravel uses Supabase PostgreSQL as its default database and a separately configured MySQL connection for the physical Windows LAN database.
 
+## Run the app with Docker
+
+Docker Compose starts the Next.js frontend, Laravel API, PostgreSQL database, and MySQL database. The PostgreSQL and MySQL data are kept in named Docker volumes. MySQL is available to the app containers only; only the frontend and API ports are published to your local network.
+
+1. Start Docker Desktop.
+2. From the project folder, run `docker compose up --build -d`.
+3. Open `http://192.168.1.4:3000` on this computer or another device on the same Wi-Fi. If this computer's LAN address changes, replace `192.168.1.4` with its current address in a project-root `.env` file as `LAN_HOST=...`, then run `docker compose up -d` again.
+4. Register a new account. Docker starts with its own databases, so accounts from a separately running host database are not copied into the Docker database.
+
+The dashboard's **PostgreSQL** source uses the PostgreSQL container. It does not use Supabase. **Physical MySQL** uses the MySQL container and starts with the sample records from `backend/database/physical_mysql.sql`. To stop the app, run `docker compose down`; to also erase all Docker database data and registered accounts, run `docker compose down -v`.
+
+The default database passwords in Compose are for local development only. Keep the database ports private and do not use these defaults for a public deployment.
+
 ## Local setup
 
 Requirements: Node.js, PHP 8.3+, Composer, a Supabase PostgreSQL project, and (for the physical database activity) a trusted local network connection to the Windows MySQL server.
@@ -47,4 +60,3 @@ The Docker image enables PostgreSQL and MySQL PDO drivers and serves Laravel thr
 - On the Windows database host, allow TCP 3306 only from the development computer or trusted lab subnet. Do not forward that port from the router or expose it publicly.
 - Use the narrowest MySQL account grants needed for the lab; do not use `root` from Laravel.
 - A cloud-hosted backend normally cannot connect to a private local-network IP. Supabase remains the student-record source for the public deployment.
-# Activity_Flores

@@ -1,0 +1,96 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: scholarspace
+      POSTGRES_USER: scholarspace
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-postgres-dev-only}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scholarspace -d scholarspace"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: student_records_local
+      MYSQL_USER: student_app
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-local-mysql-dev-only}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local-root-dev-only}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./backend/database/physical_mysql.sql:/docker-entrypoint-initdb.d/10-physical-mysql.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  backend:
+    build:
+      context: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    environment:
+      APP_NAME: ScholarSpace
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://${LAN_HOST:-192.168.1.4}:8000
+      APP_KEY: ${APP_KEY:-}
+      LOG_CHANNEL: stderr
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: scholarspace
+      DB_USERNAME: scholarspace
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-local-postgres-dev-only}
+      DB_SSLMODE: prefer
+      LOCAL_MYSQL_HOST: mysql
+      LOCAL_MYSQL_PORT: 3306
+      LOCAL_MYSQL_DATABASE: student_records_local
+      LOCAL_MYSQL_USERNAME: student_app
+      LOCAL_MYSQL_PASSWORD: ${MYSQL_PASSWORD:-local-mysql-dev-only}
+      FRONTEND_URL: http://${LAN_HOST:-192.168.1.4}:3000
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+      MAIL_MAILER: log
+    ports:
+      - "8000:10000"
+    volumes:
+      - ./backend:/var/www/html
+      - backend-vendor:/var/www/html/vendor
+      - backend-storage:/var/www/html/storage
+      - backend-key:/var/lib/scholarspace
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://${LAN_HOST:-192.168.1.4}:8000/api
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+      - frontend-next:/app/.next
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  mysql-data:
+  backend-vendor:
+  backend-storage:
+  backend-key:
+  frontend-node-modules:
+  frontend-next:

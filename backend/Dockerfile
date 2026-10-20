@@ -17,8 +17,12 @@ RUN sed -ri 's/Listen 80/Listen 10000/' /etc/apache2/ports.conf \
 WORKDIR /var/www/html
 COPY . .
 COPY --from=vendor /app/vendor ./vendor
-RUN chown -R www-data:www-data storage bootstrap/cache \
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint
+RUN chmod +x /usr/local/bin/docker-entrypoint \
+    && php artisan package:discover --ansi \
+    && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R ug+rwx storage bootstrap/cache
 
 EXPOSE 10000
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint"]
 CMD ["apache2-foreground"]
