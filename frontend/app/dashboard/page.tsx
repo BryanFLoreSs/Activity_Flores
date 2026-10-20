@@ -8,7 +8,7 @@ import { ApiError, apiRequest, getToken, StudentResponse, User } from "@/lib/api
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [source, setSource] = useState<"cloud" | "physical">("cloud");
+  const [source, setSource] = useState<"cloud" | "physical">("physical");
   const [records, setRecords] = useState<StudentResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
