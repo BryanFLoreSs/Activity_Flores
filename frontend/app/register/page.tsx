@@ -26,6 +26,7 @@ export default function RegisterPage() {
         body: JSON.stringify({ name, email, password, password_confirmation: confirmation }),
       });
       sessionStorage.setItem("student_token", result.token);
+      sessionStorage.setItem("auth_feedback", "Your account was created successfully.");
       router.replace("/dashboard");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to create your account.");

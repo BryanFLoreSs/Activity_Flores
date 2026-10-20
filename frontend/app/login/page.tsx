@@ -22,6 +22,7 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
       sessionStorage.setItem("student_token", result.token);
+      sessionStorage.setItem("auth_feedback", "You’re signed in successfully.");
       router.replace("/dashboard");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to log in.");

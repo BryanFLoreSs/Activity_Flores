@@ -12,6 +12,7 @@ export default function DashboardPage() {
   const [records, setRecords] = useState<StudentResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [authFeedback, setAuthFeedback] = useState("");
 
   const loadStudents = useCallback(async (selectedSource: "cloud" | "physical", token: string) => {
     try {
@@ -30,6 +31,11 @@ export default function DashboardPage() {
   }, [router]);
 
   useEffect(() => {
+    const feedback = sessionStorage.getItem("auth_feedback");
+    if (feedback) {
+      setAuthFeedback(feedback);
+      sessionStorage.removeItem("auth_feedback");
+    }
     const token = getToken();
     if (!token) { router.replace("/login"); return; }
     apiRequest<{ user: User }>("/me", { token })
@@ -67,6 +73,8 @@ export default function DashboardPage() {
         <header className="topbar"><div className="breadcrumb">Workspace <span>/</span> Overview</div><div className="topbar-right"><span className="online-status"><i /> All systems ready</span><button className="avatar top-avatar" onClick={handleLogout} aria-label="Log out">{initials}</button></div></header>
         <div className="dashboard-content">
           <div className="welcome-row"><div><span className="eyebrow">YOUR STUDENT WORKSPACE</span><h1>Good to have you here{user ? ", " : ""}<span>{user?.name.split(" ")[0] || ""}</span><span className="wave">✳</span></h1><p>Here’s what’s happening with your student records.</p></div><button className="button button-outline" onClick={() => { const token = getToken(); if (token) { setLoading(true); void loadStudents(source, token); } }} disabled={loading}><span className={loading ? "refresh-spin" : ""}>↻</span> Refresh data</button></div>
+
+          {authFeedback && <p className="auth-success" role="status">{authFeedback}</p>}
 
           <div className="stat-grid">
             <article className="stat-card"><div className="stat-head"><span className="stat-label">TOTAL STUDENTS</span><span className="stat-icon stat-icon-violet">▤</span></div><strong className="stat-value">{loading ? "—" : records?.count ?? "—"}</strong><span className="stat-foot">Records in selected source</span></article>
